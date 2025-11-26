@@ -1,3 +1,25 @@
+const isMobile = { Android: function() {
+  return navigator.userAgent.match(/Android/i);
+}, BlackBerry: function() {
+  return navigator.userAgent.match(/BlackBerry/i);
+}, iOS: function() {
+  return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+}, Opera: function() {
+  return navigator.userAgent.match(/Opera Mini/i);
+}, Windows: function() {
+  return navigator.userAgent.match(/IEMobile/i);
+}, any: function() {
+  return isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows();
+} };
+function addLoadedAttr() {
+  if (!document.documentElement.hasAttribute("data-fls-preloader-loading")) {
+    window.addEventListener("load", function() {
+      setTimeout(function() {
+        document.documentElement.setAttribute("data-fls-loaded", "");
+      }, 0);
+    });
+  }
+}
 let bodyLockStatus = true;
 let bodyLockToggle = (delay = 500) => {
   if (document.documentElement.hasAttribute("data-fls-scrolllock")) {
@@ -39,5 +61,7 @@ let bodyLock = (delay = 500) => {
 };
 export {
   bodyLockStatus as a,
-  bodyLockToggle as b
+  bodyLockToggle as b,
+  addLoadedAttr as c,
+  isMobile as i
 };
