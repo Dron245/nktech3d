@@ -242,9 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 document.addEventListener("DOMContentLoaded", () => {
-  if (window.innerWidth > 560) return;
   const lists = document.querySelectorAll("ul.mega__list");
-  lists.forEach((list) => {
+  function initList(list) {
+    if (list.dataset.inited === "1") return;
+    list.dataset.inited = "1";
     const items = Array.from(list.querySelectorAll("li"));
     if (items.length <= 2) return;
     items.forEach((li, i) => {
@@ -257,6 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     const btnLi = document.createElement("li");
+    btnLi.className = "mega__more-wrapper";
     const btn = document.createElement("button");
     btn.textContent = "Показать ещё";
     btn.className = "mega__more-btn";
@@ -265,36 +267,65 @@ document.addEventListener("DOMContentLoaded", () => {
     let opened = false;
     btn.addEventListener("click", () => {
       opened = !opened;
+      const submenu = list.closest(".mega.sub-menu");
       items.forEach((li, i) => {
         if (i > 1) {
           if (opened) {
             li.classList.remove("mega-hidden");
-            li.classList.add("mega-open");
-            const fullHeight = li.scrollHeight + "px";
-            li.style.height = fullHeight;
+            li.style.height = li.scrollHeight + "px";
             li.style.opacity = "1";
             li.addEventListener("transitionend", function tr() {
               if (opened) li.style.height = "auto";
               li.removeEventListener("transitionend", tr);
             });
           } else {
-            li.classList.remove("mega-open");
-            li.classList.add("mega-hidden");
             li.style.height = li.scrollHeight + "px";
             requestAnimationFrame(() => {
               li.style.height = "0px";
               li.style.opacity = "0";
             });
+            li.classList.add("mega-hidden");
           }
         }
       });
-      const submenu = document.querySelector(".mega.sub-menu");
-      submenu.style.maxHeight = setTimeout(() => {
-        submenu.style.maxHeight = submenu.scrollHeight + "px";
-      }, 350);
+      if (submenu) {
+        setTimeout(() => {
+          submenu.style.maxHeight = submenu.scrollHeight + "px";
+        }, 350);
+      }
       btn.textContent = opened ? "Скрыть" : "Показать ещё";
     });
+  }
+  function destroyList(list) {
+    if (list.dataset.inited !== "1") return;
+    delete list.dataset.inited;
+    const items = Array.from(list.querySelectorAll("li"));
+    items.forEach((li) => {
+      li.classList.remove("mega-hidden");
+      li.style.height = "";
+      li.style.opacity = "";
+      li.style.overflow = "";
+      li.style.transition = "";
+    });
+    const btnWrap = list.querySelector(".mega__more-wrapper");
+    if (btnWrap) btnWrap.remove();
+  }
+  lists.forEach((list) => {
+    if (window.innerWidth <= 560) initList(list);
   });
+  window.addEventListener(
+    "resize",
+    debounce(() => {
+      const isMobile2 = window.innerWidth <= 560;
+      lists.forEach((list) => {
+        if (isMobile2) {
+          initList(list);
+        } else {
+          destroyList(list);
+        }
+      });
+    }, 200)
+  );
 });
 function headerScroll() {
   const header = document.querySelector("[data-fls-header-scroll]");
